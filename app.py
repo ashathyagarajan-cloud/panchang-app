@@ -65,9 +65,7 @@ if github_token:
                             continue
                     
                     if active_events:
-                        st.success(f"At **{target_time_str}** on **{selected_date}**, the active status/timing is:
-
- **{', '.join(active_events)}**")
+                        st.success(f"At **{target_time_str}** on **{selected_date}**, the active status/timing is: **{', '.join(active_events)}**")
                     else:
                         st.info(f"No matching scheduled event found for {target_time_str} on {selected_date}.")
                 except ValueError:
