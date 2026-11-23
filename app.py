@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
-from zoneinfo import ZoneInfo   # CHANGED: added
+from zoneinfo import ZoneInfo
 
 st.set_page_config(page_title="Panchang Clock Dashboard", layout="centered")
 st.title("🕒 Panchang Clock Dashboard")
@@ -29,9 +29,9 @@ if github_token:
         data = load_data(github_token)
         unique_dates = sorted(data['Date'].unique())
 
-        # Default values in the panchang's time zone (the server itself runs on UTC)   # CHANGED
-        now = datetime.now(ZoneInfo("America/Chicago"))                                 # CHANGED
-        current_date = now.strftime("%Y-%m-%d")                                         # CHANGED
+        # Current date and time in the panchang's time zone (the server itself runs on UTC)
+        now = datetime.now(ZoneInfo("America/Chicago"))
+        current_date = now.strftime("%Y-%m-%d")
 
         selected_date = st.selectbox(
             "Select Date:",
@@ -39,8 +39,12 @@ if github_token:
             index=unique_dates.index(current_date) if current_date in unique_dates else 0
         )
 
-        picked_time = st.time_input("Query Time:", value=now.time(), step=60)   # CHANGED
-        target_time_str = picked_time.strftime("%I:%M:%S %p")                   # CHANGED
+        # Set the starting time only on the first run, so the visitor's choice is kept
+        if "query_time" not in st.session_state:
+            st.session_state.query_time = now.time().replace(second=0, microsecond=0)
+
+        picked_time = st.time_input("Query Time:", key="query_time", step=60)
+        target_time_str = picked_time.strftime("%I:%M:%S %p")
 
         if st.button("Check Active Period", type="primary"):
             day_data = data[data['Date'] == selected_date].copy()
