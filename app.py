@@ -3,8 +3,8 @@ import pandas as pd
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-st.set_page_config(page_title="Panchang Clock Dashboard V2", layout="centered")
-st.title("🕒 Panchang Clock Dashboard")
+st.set_page_config(page_title="Panchang Clock Dashboard", layout="centered")
+st.title("🕒 Panchang Clock Dashboard v2")
 
 # Load data from GitHub using Secrets for security
 @st.cache_data
@@ -39,12 +39,16 @@ if github_token:
             index=unique_dates.index(current_date) if current_date in unique_dates else 0
         )
 
-        # Set the starting time only on the first run, so the visitor's choice is kept
-        if "query_time" not in st.session_state:
-            st.session_state.query_time = now.time().replace(second=0, microsecond=0)
-
-        picked_time = st.time_input("Query Time:", key="query_time", step=60)
-        target_time_str = picked_time.strftime("%I:%M:%S %p")
+        # Time picker made of three dropdowns: hour, minute, AM/PM
+        st.write("Query Time:")
+        col1, col2, col3 = st.columns(3)
+        hour = col1.selectbox("Hour", [f"{h:02d}" for h in range(1, 13)],
+                              index=int(now.strftime("%I")) - 1, key="hour")
+        minute = col2.selectbox("Minute", [f"{m:02d}" for m in range(60)],
+                                index=now.minute, key="minute")
+        ampm = col3.selectbox("AM/PM", ["AM", "PM"],
+                              index=0 if now.strftime("%p") == "AM" else 1, key="ampm")
+        target_time_str = f"{hour}:{minute}:00 {ampm}"
 
         if st.button("Check Active Period", type="primary"):
             day_data = data[data['Date'] == selected_date].copy()
@@ -74,7 +78,7 @@ if github_token:
                     else:
                         st.info(f"No matching scheduled event found for {target_time_str} on {selected_date}.")
                 except ValueError:
-                    st.error("Invalid Time format. Please use 'HH:MM:SS AM/PM' (e.g., 10:19:30 AM)")
+                    st.error("Invalid Time format.")
     except Exception as e:
         st.error(f"Failed to load data: {e}")
 else:
