@@ -1,7 +1,7 @@
-
 import streamlit as st
 import pandas as pd
 from datetime import datetime
+from zoneinfo import ZoneInfo   # CHANGED: added
 
 st.set_page_config(page_title="Panchang Clock Dashboard", layout="centered")
 st.title("🕒 Panchang Clock Dashboard")
@@ -29,17 +29,18 @@ if github_token:
         data = load_data(github_token)
         unique_dates = sorted(data['Date'].unique())
 
-        # Default values from local browser time
-        current_date = datetime.now().strftime("%Y-%m-%d")
-        current_time_str = datetime.now().strftime("%I:%M:%S %p")
+        # Default values in the panchang's time zone (the server itself runs on UTC)   # CHANGED
+        now = datetime.now(ZoneInfo("America/Chicago"))                                 # CHANGED
+        current_date = now.strftime("%Y-%m-%d")                                         # CHANGED
 
         selected_date = st.selectbox(
-            "Select Date:", 
+            "Select Date:",
             options=unique_dates,
             index=unique_dates.index(current_date) if current_date in unique_dates else 0
         )
-        
-        target_time_str = st.text_input("Query Time:", value=current_time_str, placeholder="HH:MM:SS AM/PM")
+
+        picked_time = st.time_input("Query Time:", value=now.time(), step=60)   # CHANGED
+        target_time_str = picked_time.strftime("%I:%M:%S %p")                   # CHANGED
 
         if st.button("Check Active Period", type="primary"):
             day_data = data[data['Date'] == selected_date].copy()
@@ -49,7 +50,7 @@ if github_token:
                 try:
                     target_time = datetime.strptime(target_time_str.strip(), "%I:%M:%S %p").time()
                     active_events = []
-                    
+
                     for idx, row in day_data.iterrows():
                         try:
                             start_time = datetime.strptime(row['Start'].strip(), "%I:%M:%S %p").time()
@@ -63,7 +64,7 @@ if github_token:
                                     active_events.append(row['Timing'])
                         except:
                             continue
-                    
+
                     if active_events:
                         st.success(f"At **{target_time_str}** on **{selected_date}**, the active status/timing is: **{', '.join(active_events)}**")
                     else:
