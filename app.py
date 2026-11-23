@@ -3,7 +3,7 @@ import pandas as pd
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-st.set_page_config(page_title="Panchang Clock Dashboard", layout="centered")
+st.set_page_config(page_title="Panchang Clock Dashboard V2", layout="centered")
 st.title("🕒 Panchang Clock Dashboard")
 
 # Load data from GitHub using Secrets for security
